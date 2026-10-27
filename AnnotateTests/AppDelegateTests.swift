@@ -80,8 +80,9 @@ final class AppDelegateTests: XCTestCase, Sendable {
             XCTAssertEqual(window.overlayView.currentTool, .line)
         }
         
-        if let menu = appDelegate.statusItem.menu,
-            let currentToolItem = menu.item(at: 3)  // Index 3 is "Current Tool" menu item
+        if let currentToolItem = appDelegate.statusItem.menu?.items.first(where: {
+            $0.title.hasPrefix("Current Tool:")
+        })
         {
             XCTAssertEqual(currentToolItem.title, "Current Tool: Line")
         }
@@ -93,8 +94,9 @@ final class AppDelegateTests: XCTestCase, Sendable {
             XCTAssertEqual(window.overlayView.currentTool, .counter)
         }
 
-        if let menu = appDelegate.statusItem.menu,
-            let currentToolItem = menu.item(at: 3)  // Index 3 is "Current Tool" menu item
+        if let currentToolItem = appDelegate.statusItem.menu?.items.first(where: {
+            $0.title.hasPrefix("Current Tool:")
+        })
         {
             XCTAssertEqual(currentToolItem.title, "Current Tool: Counter")
         }

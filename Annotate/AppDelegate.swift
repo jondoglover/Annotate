@@ -10,6 +10,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, NSPopoverD
     var statusItem: NSStatusItem!
     var colorPopover: NSPopover?
     var lineWidthPopover: NSPopover?
+    var activeColorSampler: NSColorSampler?
     var currentColor: NSColor = .systemRed
     var hotkeyMonitor: Any?
     var overlayWindows: [NSScreen: OverlayWindow] = [:]
@@ -389,10 +390,105 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, NSPopoverD
         }
     }
 
+
+    func applySelectedColor(_ selectedColor: NSColor) {
+        if let colorData = try? NSKeyedArchiver.archivedData(
+            withRootObject: selectedColor, requiringSecureCoding: false)
+        {
+            userDefaults.set(colorData, forKey: "SelectedColor")
+        }
+
+        currentColor = selectedColor
+        overlayWindows.values.forEach { $0.currentColor = selectedColor }
+        updateStatusBarIcon(with: selectedColor)
+        CursorHighlightManager.shared.annotationColor = selectedColor
+    }
+
+    @objc func pickScreenColor(_ sender: Any?) {
+        colorPopover?.performClose(nil)
+
+        let cursorManager = CursorHighlightManager.shared
+        let wasSuppressingCursorEffects = cursorManager.suppressCursorEffectsForColorSampling
+        cursorManager.suppressCursorEffectsForColorSampling = true
+        cursorManager.updateCursorVisibility()
+
+        // Give the cursor highlight windows one pass to hide the app-drawn cursor before
+        // NSColorSampler starts sampling under the pointer.
+        cursorHighlightWindows.values.forEach { window in
+            window.highlightView.updateSpotlightPosition()
+            window.highlightView.updateHoldRingPosition()
+            window.highlightView.updateActiveCursor()
+            window.updateVisibility()
+        }
+
+        let overlayStates = overlayWindows.values.map { window in
+            (
+                window: window,
+                wasVisible: window.isVisible,
+                wasKeyWindow: window.isKeyWindow,
+                ignoresMouseEvents: window.ignoresMouseEvents,
+                isReadOnlyMode: window.overlayView.isReadOnlyMode
+            )
+        }
+
+        overlayWindows.values.forEach { window in
+            window.ignoresMouseEvents = true
+            window.overlayView.isReadOnlyMode = true
+            window.overlayView.needsDisplay = true
+            window.overlayView.updateCursor()
+            window.invalidateCursorRects(for: window.overlayView)
+        }
+
+        let sampler = NSColorSampler()
+        activeColorSampler = sampler
+
+        sampler.show { [weak self] selectedColor in
+            guard let self = self else { return }
+
+            DispatchQueue.main.async {
+                self.activeColorSampler = nil
+
+                overlayStates.forEach { state in
+                    state.window.ignoresMouseEvents = state.ignoresMouseEvents
+                    state.window.overlayView.isReadOnlyMode = state.isReadOnlyMode
+                    state.window.overlayView.needsDisplay = true
+                    state.window.overlayView.updateCursor()
+                    state.window.invalidateCursorRects(for: state.window.overlayView)
+
+                    // NSColorSampler temporarily takes focus away from Annotate. If an
+                    // interactive overlay was visible before sampling, make it key again so
+                    // mouse drawing and the single-key shortcuts resume immediately.
+                    if state.wasVisible && !state.window.ignoresMouseEvents {
+                        state.window.makeKeyAndOrderFront(nil)
+                    }
+                }
+
+                cursorManager.suppressCursorEffectsForColorSampling = wasSuppressingCursorEffects
+                cursorManager.updateCursorVisibility()
+                self.updateAllCursorHighlightWindows()
+                CursorHighlightManager.shared.overlayVisibilityChanged()
+
+                if let selectedColor = selectedColor {
+                    self.applySelectedColor(selectedColor)
+                }
+
+                // Re-activate after applying the color as well; some macOS versions leave
+                // focus with the system sampler, which makes Annotate look alive but unable
+                // to receive shortcuts or mouse events until manually clicked.
+                NSApplication.shared.activate(ignoringOtherApps: true)
+                if let keyOverlay = overlayStates.first(where: { $0.wasKeyWindow && $0.wasVisible && !$0.window.ignoresMouseEvents }) {
+                    keyOverlay.window.makeKeyAndOrderFront(nil)
+                } else if let visibleOverlay = overlayStates.first(where: { $0.wasVisible && !$0.window.ignoresMouseEvents }) {
+                    visibleOverlay.window.makeKeyAndOrderFront(nil)
+                }
+            }
+        }
+    }
+
     @objc func showColorPicker(_ sender: Any?) {
         if colorPopover == nil {
             colorPopover = NSPopover()
-            colorPopover?.contentViewController = ColorPickerViewController(userDefaults: userDefaults)
+            colorPopover?.contentViewController = ColorPickerViewController()
             colorPopover?.behavior = .transient
             colorPopover?.delegate = self
         }

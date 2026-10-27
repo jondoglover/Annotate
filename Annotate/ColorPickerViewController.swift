@@ -18,26 +18,16 @@ class ColorSwatchButton: NSButton {
 class ColorPickerViewController: NSViewController {
     private var keyMonitor: Any?
     private var buttons: [ColorSwatchButton] = []
-    private let userDefaults: UserDefaults
-
-    init(userDefaults: UserDefaults = .standard) {
-        self.userDefaults = userDefaults
-        super.init(nibName: nil, bundle: nil)
-    }
-
-    required init?(coder: NSCoder) {
-        self.userDefaults = .standard
-        super.init(coder: coder)
-    }
+    private var colorNameField: NSComboBox!
 
     override func loadView() {
-        let containerView = NSView(frame: NSRect(x: 0, y: 0, width: 150, height: 100))
+        let containerView = NSView(frame: NSRect(x: 0, y: 0, width: 190, height: 180))
 
         let stackView = NSStackView()
         stackView.orientation = .vertical
         stackView.alignment = .leading
-        stackView.distribution = .fillEqually
-        stackView.spacing = 0
+        stackView.distribution = .fill
+        stackView.spacing = 5
 
         let columnsPerRow = 3
         var buttonIndex = 0
@@ -63,7 +53,19 @@ class ColorPickerViewController: NSViewController {
                 rowStack.addArrangedSubview(button)
             }
             stackView.addArrangedSubview(rowStack)
+            rowStack.heightAnchor.constraint(equalToConstant: 42).isActive = true
+            rowStack.widthAnchor.constraint(equalTo: stackView.widthAnchor).isActive = true
         }
+
+        colorNameField = NSComboBox()
+        colorNameField.placeholderString = "CSS color name"
+        colorNameField.addItems(withObjectValues: CSSColorCatalog.names)
+        colorNameField.completes = true
+        colorNameField.numberOfVisibleItems = 8
+        colorNameField.target = self
+        colorNameField.action = #selector(cssColorSubmitted(_:))
+        stackView.addArrangedSubview(colorNameField)
+        colorNameField.widthAnchor.constraint(equalTo: stackView.widthAnchor).isActive = true
 
         containerView.addSubview(stackView)
         stackView.translatesAutoresizingMaskIntoConstraints = false
@@ -82,6 +84,7 @@ class ColorPickerViewController: NSViewController {
         super.viewDidAppear()
         setupKeyboardMonitoring()
         updateButtonLabels()
+        view.window?.makeFirstResponder(colorNameField)
     }
 
     override func viewWillDisappear() {
@@ -146,24 +149,32 @@ class ColorPickerViewController: NSViewController {
     }
 
     @objc func colorSwatchClicked(_ sender: ColorSwatchButton) {
-        guard let appDelegate = AppDelegate.shared else { return }
-        let selectedColor = sender.swatchColor
+        selectColor(sender.swatchColor)
+    }
 
-        if let colorData = try? NSKeyedArchiver.archivedData(
-            withRootObject: selectedColor, requiringSecureCoding: false)
-        {
-            userDefaults.set(colorData, forKey: "SelectedColor")
-        }
-
-        appDelegate.currentColor = selectedColor
-        appDelegate.overlayWindows.values.forEach { $0.currentColor = selectedColor }
-        appDelegate.updateStatusBarIcon(with: selectedColor)
-        CursorHighlightManager.shared.annotationColor = selectedColor
-
-        if let popover = AppDelegate.shared?.colorPopover {
-            popover.performClose(nil)
-        } else if let parentWindow = self.view.window {
-            parentWindow.close()
+    @objc private func cssColorSubmitted(_ sender: NSComboBox) {
+        guard selectCSSColor(named: sender.stringValue) else {
+            NSSound.beep()
+            return
         }
     }
+
+    @discardableResult
+    func selectCSSColor(named name: String) -> Bool {
+        guard let color = CSSColorCatalog.color(named: name) else { return false }
+        selectColor(color)
+        return true
+    }
+
+    private func selectColor(_ color: NSColor) {
+        guard let appDelegate = AppDelegate.shared else { return }
+        appDelegate.applySelectedColor(color)
+
+        if let popover = appDelegate.colorPopover {
+            popover.performClose(nil)
+        } else {
+            view.window?.close()
+        }
+    }
+
 }

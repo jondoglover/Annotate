@@ -28,28 +28,23 @@ final class ColorPickerViewControllerTests: XCTestCase, Sendable {
     }
 
     func testColorPaletteInitialization() {
-        XCTAssertEqual(colorPalette.count, 9)
-        XCTAssertEqual(colorPalette[0], .systemRed)
-        XCTAssertEqual(colorPalette[1], .systemOrange)
-        XCTAssertEqual(colorPalette[2], .systemYellow)
-        XCTAssertEqual(colorPalette[3], .systemGreen)
-        XCTAssertEqual(colorPalette[4], .cyan)
-        XCTAssertEqual(colorPalette[5], .systemIndigo)
-        XCTAssertEqual(colorPalette[6], .magenta)
-        XCTAssertEqual(colorPalette[7], .white)
-        XCTAssertEqual(colorPalette[8], .black)
+        XCTAssertEqual(
+            colorPalette,
+            [.black, .systemRed, .systemIndigo, .white, .systemGreen,
+             .systemOrange, .systemYellow, .cyan, .magenta]
+        )
     }
 
     func testViewSetup() {
         // Verify container view setup
-        XCTAssertEqual(colorPicker.view.frame.size, NSSize(width: 150, height: 100))
+        XCTAssertEqual(colorPicker.view.frame.size, NSSize(width: 190, height: 180))
 
         // Find the main vertical stack view
         let mainStackView = colorPicker.view.subviews.first as? NSStackView
         XCTAssertNotNil(mainStackView)
         XCTAssertEqual(mainStackView?.orientation, .vertical)
         XCTAssertEqual(mainStackView?.alignment, .leading)
-        XCTAssertEqual(mainStackView?.distribution, .fillEqually)
+        XCTAssertEqual(mainStackView?.distribution, .fill)
 
         // Check row stack views
         let rowStackViews = mainStackView?.arrangedSubviews.compactMap { $0 as? NSStackView }
@@ -75,14 +70,30 @@ final class ColorPickerViewControllerTests: XCTestCase, Sendable {
         }
 
         // Verify button color
-        XCTAssertEqual(firstButton.swatchColor, .systemRed)
+        XCTAssertEqual(firstButton.swatchColor, .black)
 
         // Simulate button click
         colorPicker.colorSwatchClicked(firstButton)
 
         // Verify color was updated in AppDelegate
-        XCTAssertEqual(mockAppDelegate.currentColor, .systemRed)
+        XCTAssertEqual(mockAppDelegate.currentColor, .black)
         XCTAssertTrue(mockAppDelegate.updateStatusBarIconCalled)
+    }
+
+    func testCSSColorCatalog() {
+        XCTAssertEqual(CSSColorCatalog.names.count, 148)
+        XCTAssertNotNil(CSSColorCatalog.color(named: "rebeccapurple"))
+        XCTAssertNotNil(CSSColorCatalog.color(named: "Light Goldenrod Yellow"))
+        XCTAssertNil(CSSColorCatalog.color(named: "not-a-color"))
+    }
+
+    func testCSSColorSelection() {
+        XCTAssertTrue(colorPicker.selectCSSColor(named: "tomato"))
+
+        let color = mockAppDelegate.currentColor.usingColorSpace(.sRGB)
+        XCTAssertEqual(color?.redComponent ?? 0, 1, accuracy: 0.001)
+        XCTAssertEqual(color?.greenComponent ?? 0, 99.0 / 255, accuracy: 0.001)
+        XCTAssertEqual(color?.blueComponent ?? 0, 71.0 / 255, accuracy: 0.001)
     }
 }
 

@@ -46,6 +46,21 @@ class CursorHighlightManager: @unchecked Sendable {
     var mouseDownTime: CFTimeInterval = 0
     var releaseAnimation: ReleaseAnimation?
 
+    /// Temporarily hides all app-drawn cursor/spotlight/ripple overlays while using the system color sampler.
+    /// This prevents the eyedropper from sampling Annotate's own cursor indicator instead of the screen below it.
+    var suppressCursorEffectsForColorSampling: Bool = false {
+        didSet {
+            if oldValue != suppressCursorEffectsForColorSampling {
+                if suppressCursorEffectsForColorSampling {
+                    isMouseDown = false
+                    releaseAnimation = nil
+                    showSystemCursor()
+                }
+                notifyStateChanged()
+            }
+        }
+    }
+
     let appearDuration: TimeInterval = 0.15
     let releaseDuration: TimeInterval = 0.2
 
@@ -190,16 +205,16 @@ class CursorHighlightManager: @unchecked Sendable {
 
     // MARK: - Computed State
 
-    var isActive: Bool { clickEffectsEnabled }
+    var isActive: Bool { clickEffectsEnabled && !suppressCursorEffectsForColorSampling }
 
     var shouldShowRing: Bool { isActive && isMouseDown }
 
     var shouldShowCursorHighlight: Bool {
-        cursorHighlightEnabled && !isMouseDown
+        cursorHighlightEnabled && !isMouseDown && !suppressCursorEffectsForColorSampling
     }
 
     var hasActiveAnimation: Bool {
-        releaseAnimation.map { !$0.isExpired } ?? false
+        !suppressCursorEffectsForColorSampling && (releaseAnimation.map { !$0.isExpired } ?? false)
     }
 
     /// Whether the animation loop should continue running
@@ -221,7 +236,7 @@ class CursorHighlightManager: @unchecked Sendable {
     }
 
     func shouldShowActiveCursorOnScreen(_ screen: NSScreen) -> Bool {
-        isOverlayActiveOnScreen(screen) && activeCursorStyle != .none
+        !suppressCursorEffectsForColorSampling && isOverlayActiveOnScreen(screen) && activeCursorStyle != .none
     }
 
     func hasAnyActiveOverlay() -> Bool {
@@ -230,7 +245,7 @@ class CursorHighlightManager: @unchecked Sendable {
 
     /// Used to keep cursor highlight windows active when any overlay is visible
     func shouldShowActiveCursorOnAnyScreen() -> Bool {
-        hasAnyActiveOverlay() && activeCursorStyle != .none
+        !suppressCursorEffectsForColorSampling && hasAnyActiveOverlay() && activeCursorStyle != .none
     }
 
     // MARK: - Release Animation

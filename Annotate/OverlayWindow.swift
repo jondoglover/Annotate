@@ -642,6 +642,15 @@ class OverlayWindow: NSPanel {
     override func keyDown(with event: NSEvent) {
         let cmdPressed = event.modifierFlags.contains(.command)
         let key = event.characters?.lowercased() ?? ""
+
+        if !cmdPressed
+            && event.modifierFlags.intersection([.command, .option, .control]).isEmpty
+            && event.modifierFlags.contains(.shift)
+            && key == "v"
+        {
+            AppDelegate.shared?.pickScreenColor(nil)
+            return
+        }
         
         // Handle single-key shortcuts if no modifiers are pressed
         if !cmdPressed
