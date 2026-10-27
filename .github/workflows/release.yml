@@ -47,14 +47,6 @@ jobs:
           BUILD_NUMBER=$(($(git rev-list --count HEAD) + 1000))
           echo "build_number=$BUILD_NUMBER" >> "$GITHUB_OUTPUT"
 
-      - name: Install dependencies
-        run: |
-          # Install XcodeGen and pandoc for project generation and markdown processing
-          brew install xcodegen pandoc
-
-      - name: Generate Xcode project
-        run: xcodegen generate
-
       - name: Inject TEAM_ID into ExportOptions
         run: |
           sed "s/__TEAM_ID__/${{ secrets.TEAM_ID }}/" "$EXPORT_PLIST" > "$EXPORT_PLIST.out"
@@ -65,9 +57,6 @@ jobs:
         with:
           p12-file-base64: ${{ secrets.MACOS_CERT_BASE64 }}
           p12-password: ${{ secrets.MACOS_CERT_PASSWORD }}
-
-      - name: Install xcpretty
-        run: gem install xcpretty --no-document
 
       - name: Xcode archive (arm64, verbose, unsigned)
         timeout-minutes: 3
@@ -85,7 +74,7 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             MARKETING_VERSION=${{ steps.version.outputs.semver }} \
             CURRENT_PROJECT_VERSION=${{ steps.version.outputs.build_number }} \
-            clean archive | xcpretty && exit ${PIPESTATUS[0]}
+            clean archive
 
       - name: Export signed app (Developer ID)
         timeout-minutes: 2
@@ -94,7 +83,7 @@ jobs:
           xcodebuild -exportArchive \
             -archivePath "$ARCHIVE_PATH" \
             -exportPath "$EXPORT_DIR" \
-            -exportOptionsPlist "$EXPORT_PLIST" | xcpretty && exit ${PIPESTATUS[0]}
+            -exportOptionsPlist "$EXPORT_PLIST"
 
       - name: Re-sign with hardened runtime
         run: |

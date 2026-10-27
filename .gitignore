@@ -27,13 +27,6 @@ build/
 DerivedData/
 Symbols/
 
-# XcodeGen
-*.xcodeproj/project.pbxproj
-*.xcodeproj/xcshareddata/
-
-# Keep Swift Package Manager resolution
-!*.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
-
 # Sparkle Framework and Tools
 Sparkle.framework/
 *.app/
