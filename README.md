@@ -86,13 +86,21 @@ Sometimes you need to emphasize a part of your screen or share ideas visually, a
    ```
 
 3. **Build and Run:**
-   - Ensure you have the latest version of Xcode installed.
-   - Select your target macOS version, then build and run the project in Xcode.
+   - Ensure you have Xcode 16 or later installed.
+   - Select the `Annotate` scheme, then press <kbd>Command</kbd> + <kbd>R</kbd>.
+
+   Or build, test, and run from Terminal:
+
+   ```sh
+   make build
+   make test
+   make run
+   ```
 
 ## 🚀 Quick Start
 
 1. Launch Annotate.
-2. Press the global hotkey (configurable in Settings) to toggle the overlay.
+2. Press <kbd>Control</kbd> + <kbd>Option</kbd> + <kbd>D</kbd> to toggle the overlay.
 3. Start annotating with the default pen tool.
 4. Press <kbd>Esc</kbd> to exit the overlay.
 
@@ -127,9 +135,10 @@ Sometimes you need to emphasize a part of your screen or share ideas visually, a
 
 | Key          | Tool                 | Description                               |
 | ------------ | -------------------- | ----------------------------------------- |
-| <kbd>C</kbd> | **Color Picker**     | Open color selection menu                 |
+| <kbd>V</kbd> | **Color Picker**     | Open default and CSS named-color picker   |
+| <kbd>Shift</kbd> + <kbd>V</kbd> | **Eyedropper** | Pick a color anywhere on screen       |
 | <kbd>W</kbd> | **Line Width**       | Open line width picker                    |
-| <kbd>V</kbd> | **Select**           | Select, move, and manage objects          |
+| <kbd>S</kbd> | **Select**           | Select, move, and manage objects          |
 | <kbd>B</kbd> | **Board**            | Toggle whiteboard/blackboard              |
 | <kbd>K</kbd> | **Cursor Highlight** | Toggle cursor highlight and click effects |
 
@@ -161,7 +170,7 @@ Sometimes you need to emphasize a part of your screen or share ideas visually, a
 
 | Shortcut                                            | Action             | Description                          |
 | --------------------------------------------------- | ------------------ | ------------------------------------ |
-| Custom (Settings)                                   | **Toggle Overlay** | Show or hide the annotation overlay  |
+| <kbd>Control</kbd> + <kbd>Option</kbd> + <kbd>D</kbd> | **Toggle Overlay** | Show or hide the annotation overlay  |
 | Custom (Settings)                                   | **Always-On Mode** | Persistent, non-interactive display  |
 | <kbd>Esc</kbd> or <kbd>Command</kbd> + <kbd>W</kbd> | **Close**          | Closes the annotation overlay        |
 | <kbd>Shift</kbd> + <kbd>Esc</kbd>                   | **Switch Mode**    | Close interactive → enable always-on |
@@ -223,7 +232,7 @@ Annotate provides flexible line width control:
 
 The Select tool allows you to manipulate existing annotations with precision:
 
-- **Select Objects**: Press <kbd>V</kbd> to enter select mode
+- **Select Objects**: Press <kbd>S</kbd> to enter select mode
 
   - Click on objects to select them (lines, arrows, shapes, text, etc.)
   - Circles and rectangles must be clicked on their edges
@@ -311,7 +320,6 @@ Settings are organized into two tabs: **General** and **Shortcuts**.
 - **Always-On Mode**: Set a global keyboard shortcut to toggle always-on mode.
 - **Clear Drawings on Toggle**: Automatically clear all drawings when activating Annotate.
 - **Hide Tool Feedback**: Disable visual feedback when switching tools.
-- **Show in Dock**: Display Annotate icon in the Dock.
 - **Enable Board**: Show whiteboard or blackboard background.
 - **Board Opacity**: Adjust board background transparency (10-100%).
 - **Cursor Style**: Choose how the cursor appears while annotating (None, Outline, Circle, Crosshair).
