@@ -42,7 +42,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, NSPopoverD
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         AppDelegate.shared = self
-        updateDockIconVisibility()
+        NSApplication.shared.setActivationPolicy(.accessory)
 
         if let colorData = userDefaults.data(forKey: "SelectedColor"),
             let unarchivedColor = try? NSKeyedUnarchiver.unarchivedObject(
@@ -111,19 +111,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, NSPopoverD
         localMouseClickMonitor = nil
         localMouseUpMonitor = nil
         localFlagsChangedMonitor = nil
-    }
-
-    @MainActor
-    func updateDockIconVisibility() {
-        guard NSApplication.shared.delegate != nil else { return }
-
-        if userDefaults.bool(forKey: UserDefaults.hideDockIconKey) {
-            NSApplication.shared.setActivationPolicy(.accessory)
-        } else {
-            NSApplication.shared.setActivationPolicy(.regular)
-        }
-        NSApplication.shared.activate(ignoringOtherApps: true)
-        settingsWindow?.makeKeyAndOrderFront(nil)
     }
 
     func setupStatusBarItem() {

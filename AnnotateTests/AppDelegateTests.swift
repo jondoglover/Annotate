@@ -1,4 +1,5 @@
 import Foundation
+import KeyboardShortcuts
 import XCTest
 
 @testable import Annotate
@@ -35,6 +36,14 @@ final class AppDelegateTests: XCTestCase, Sendable {
         XCTAssertNotNil(appDelegate.statusItem.menu)
         XCTAssertEqual(appDelegate.currentColor, .systemRed)
         XCTAssertNotNil(AppDelegate.shared)
+        XCTAssertEqual(NSApplication.shared.activationPolicy(), .accessory)
+        XCTAssertEqual(Bundle.main.object(forInfoDictionaryKey: "LSUIElement") as? Bool, true)
+    }
+
+    func testDefaultActivationShortcut() {
+        let shortcut = KeyboardShortcuts.Name.toggleOverlay.defaultShortcut
+        XCTAssertEqual(shortcut?.key, .d)
+        XCTAssertEqual(shortcut?.modifiers, [.control, .option])
     }
 
     func testStatusBarMenu() {
@@ -200,21 +209,6 @@ final class AppDelegateTests: XCTestCase, Sendable {
 
         testDefaults.set(false, forKey: UserDefaults.clearDrawingsOnStartKey)
         XCTAssertFalse(testDefaults.bool(forKey: UserDefaults.clearDrawingsOnStartKey))
-    }
-
-    // MARK: - Dock Icon Tests
-
-    func testHideDockIconDefaultValue() {
-        testDefaults.removeObject(forKey: UserDefaults.hideDockIconKey)
-        XCTAssertFalse(testDefaults.bool(forKey: UserDefaults.hideDockIconKey))
-    }
-
-    func testDockIconVisibilityPersistence() {
-        testDefaults.set(true, forKey: UserDefaults.hideDockIconKey)
-        XCTAssertTrue(testDefaults.bool(forKey: UserDefaults.hideDockIconKey))
-
-        testDefaults.set(false, forKey: UserDefaults.hideDockIconKey)
-        XCTAssertFalse(testDefaults.bool(forKey: UserDefaults.hideDockIconKey))
     }
 
     // MARK: - Persist Fade Mode Tests

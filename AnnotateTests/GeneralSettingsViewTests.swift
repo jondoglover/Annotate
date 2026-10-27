@@ -34,15 +34,6 @@ final class GeneralSettingsViewTests: XCTestCase {
         XCTAssertFalse(finalValue, "clearDrawingsOnStart should be false after resetting")
     }
 
-    func testHideDockIconBinding() {
-        let initialValue = testDefaults.bool(forKey: UserDefaults.hideDockIconKey)
-        XCTAssertFalse(initialValue, "hideDockIcon should default to false")
-
-        testDefaults.set(true, forKey: UserDefaults.hideDockIconKey)
-        let updatedValue = testDefaults.bool(forKey: UserDefaults.hideDockIconKey)
-        XCTAssertTrue(updatedValue, "hideDockIcon should be true after setting")
-    }
-
     func testHideToolFeedbackBinding() {
         let initialValue = testDefaults.bool(forKey: UserDefaults.hideToolFeedbackKey)
         XCTAssertFalse(initialValue, "hideToolFeedback should default to false")
@@ -119,31 +110,6 @@ final class GeneralSettingsViewTests: XCTestCase {
         XCTAssertEqual(BoardManager.shared.opacity, 0.5, "Valid opacity should be set correctly")
     }
 
-    // MARK: - AppDelegate Integration Tests
-
-    func testDockIconToggleCallsAppDelegate() {
-        let appDelegateSpy = AppDelegateSettingsSpy(userDefaults: testDefaults)
-        AppDelegate.shared = appDelegateSpy
-
-        testDefaults.set(true, forKey: UserDefaults.hideDockIconKey)
-        appDelegateSpy.updateDockIconVisibility()
-
-        XCTAssertTrue(appDelegateSpy.updateDockIconVisibilityCalled)
-
-        AppDelegate.shared = nil
-    }
-
-    func testShowInDockToggleInverted() {
-        // GeneralSettingsView uses inverted binding: Show in Dock = !hideDockIcon
-        testDefaults.set(false, forKey: UserDefaults.hideDockIconKey)
-        let showInDock1 = !testDefaults.bool(forKey: UserDefaults.hideDockIconKey)
-        XCTAssertTrue(showInDock1, "Show in Dock should be true when hideDockIcon is false")
-
-        testDefaults.set(true, forKey: UserDefaults.hideDockIconKey)
-        let showInDock2 = !testDefaults.bool(forKey: UserDefaults.hideDockIconKey)
-        XCTAssertFalse(showInDock2, "Show in Dock should be false when hideDockIcon is true")
-    }
-
     // MARK: - State Synchronization Tests
 
     func testBoardManagerAndUserDefaultsStaySynchronized() {
@@ -192,10 +158,6 @@ final class GeneralSettingsViewTests: XCTestCase {
         XCTAssertFalse(
             testDefaults.bool(forKey: UserDefaults.clearDrawingsOnStartKey),
             "clearDrawingsOnStart should default to false"
-        )
-        XCTAssertFalse(
-            testDefaults.bool(forKey: UserDefaults.hideDockIconKey),
-            "hideDockIcon should default to false"
         )
         XCTAssertFalse(
             testDefaults.bool(forKey: UserDefaults.hideToolFeedbackKey),
@@ -259,16 +221,5 @@ final class GeneralSettingsViewTests: XCTestCase {
         XCTAssertTrue(clearedDrawings)
         XCTAssertEqual(opacity, 0.65)
         XCTAssertTrue(enabled)
-    }
-}
-
-// MARK: - Test Spy
-
-@MainActor
-class AppDelegateSettingsSpy: AppDelegate {
-    var updateDockIconVisibilityCalled = false
-
-    override func updateDockIconVisibility() {
-        updateDockIconVisibilityCalled = true
     }
 }

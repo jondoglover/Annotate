@@ -5,8 +5,6 @@ import SwiftUI
 struct GeneralSettingsView: View {
     @AppStorage(UserDefaults.clearDrawingsOnStartKey)
     private var clearDrawingsOnStart = false
-    @AppStorage(UserDefaults.hideDockIconKey)
-    private var hideDockIcon = false
     @AppStorage(UserDefaults.hideToolFeedbackKey)
     private var hideToolFeedback = false
     @AppStorage(UserDefaults.enableBoardKey)
@@ -80,16 +78,6 @@ struct GeneralSettingsView: View {
                         isOn: $hideToolFeedback
                     )
 
-                    SettingsToggleRow(
-                        title: "Show in Dock",
-                        description: "Display Annotate icon in the Dock",
-                        isOn: Binding(
-                            get: { !hideDockIcon },
-                            set: { hideDockIcon = !$0 }
-                        )
-                    ) {
-                        AppDelegate.shared?.updateDockIconVisibility()
-                    }
                 }
 
                 Divider()

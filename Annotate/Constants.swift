@@ -2,13 +2,16 @@ import Cocoa
 import KeyboardShortcuts
 
 extension KeyboardShortcuts.Name {
-    static let toggleOverlay = Self("toggleOverlay")
+    static let toggleOverlay = Self(
+        "toggleOverlay",
+        default: .init(.d, modifiers: [.control, .option])
+    )
     static let toggleAlwaysOnMode = Self("toggleAlwaysOnMode")
 }
 
 extension UserDefaults {
     static let clearDrawingsOnStartKey = "ClearDrawingsOnStart"
-    static let hideDockIconKey = "HideDockIcon"
+    static let controlOptionDConfiguredKey = "ControlOptionDConfigured"
     static let fadeModeKey = "FadeMode"
     static let enableBoardKey = "EnableBoard"
     static let boardOpacityKey = "BoardOpacity"
