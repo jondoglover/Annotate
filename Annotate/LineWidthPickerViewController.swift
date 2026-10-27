@@ -6,9 +6,9 @@ class LineWidthPickerViewController: NSViewController {
     private var previewView: LineWidthPreviewView!
     private let userDefaults: UserDefaults
 
-    let minLineWidth: CGFloat = 0.5
-    let maxLineWidth: CGFloat = 20.0
-    let ratio: CGFloat = 0.25
+    let minLineWidth = LineWidth.minimum
+    let maxLineWidth = LineWidth.maximum
+    let ratio = LineWidth.increment
 
     init(userDefaults: UserDefaults = .standard) {
         self.userDefaults = userDefaults
@@ -84,10 +84,7 @@ class LineWidthPickerViewController: NSViewController {
     }
     
     @objc func sliderValueChanged(_ sender: NSSlider) {
-        let rawValue = CGFloat(sender.doubleValue)
-        let adjustedValue = round(rawValue / ratio) * ratio
-
-        let lineWidth = max(minLineWidth, min(maxLineWidth, adjustedValue))
+        let lineWidth = LineWidth.normalized(CGFloat(sender.doubleValue))
 
         updateValueLabel(lineWidth)
         previewView.lineWidth = lineWidth

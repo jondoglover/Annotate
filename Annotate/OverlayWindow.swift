@@ -880,28 +880,17 @@ class OverlayWindow: NSPanel {
     }
     
     private func scrollWheelForLineWidth(with event: NSEvent) {
-        // Adjust line width with Command + Scroll
-        let minLineWidth: CGFloat = 0.5
-        let maxLineWidth: CGFloat = 20.0
-        let ratio: CGFloat = 0.25
-        
         // Get scroll delta (negative means scroll up, positive means scroll down)
         let scrollDelta = event.scrollingDeltaY
         
         // Determine direction and amount
-        let increment: CGFloat = scrollDelta > 0 ? ratio : -ratio
+        let increment = scrollDelta > 0 ? LineWidth.increment : -LineWidth.increment
         
         // Get current line width
         let currentWidth = overlayView.currentLineWidth
         
         // Calculate new width
-        var newWidth = currentWidth + increment
-        
-        // Round to nearest ratio increment
-        newWidth = round(newWidth / ratio) * ratio
-        
-        // Clamp to min/max
-        newWidth = max(minLineWidth, min(maxLineWidth, newWidth))
+        let newWidth = LineWidth.normalized(currentWidth + increment)
         
         // Only update if value changed
         if newWidth != currentWidth {

@@ -196,9 +196,9 @@ final class ArrowDrawingTests: XCTestCase, Sendable {
         XCTAssertEqual(thickArrowheadSize, 40.0, "Thick line should scale arrowhead size proportionally")
         
         // Test maximum line width
-        let maxLineWidth: CGFloat = 20.0
+        let maxLineWidth: CGFloat = 100.0
         let maxArrowheadSize = max(10.0, maxLineWidth * 4.0)
-        XCTAssertEqual(maxArrowheadSize, 80.0, "Maximum line width should have largest arrowhead")
+        XCTAssertEqual(maxArrowheadSize, 400.0, "Maximum line width should have largest arrowhead")
     }
     
     func testArrowheadSizeFormula() {

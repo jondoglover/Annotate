@@ -32,7 +32,7 @@ final class LineWidthPickerViewControllerTests: XCTestCase, Sendable {
     func testLineWidthBounds() {
         // Test minimum and maximum line width constants
         XCTAssertEqual(viewController.minLineWidth, 0.5)
-        XCTAssertEqual(viewController.maxLineWidth, 20.0)
+        XCTAssertEqual(viewController.maxLineWidth, 100.0)
     }
     
     func testLineWidthRatio() {
@@ -95,22 +95,8 @@ final class LineWidthPickerViewControllerTests: XCTestCase, Sendable {
     
     func testLineWidthClamping() {
         // Test that line width values are clamped to min/max
-        let minWidth: CGFloat = 0.5
-        let maxWidth: CGFloat = 20.0
-        
-        // Test below minimum
-        let belowMin: CGFloat = 0.2
-        let clampedMin = max(minWidth, min(maxWidth, belowMin))
-        XCTAssertEqual(clampedMin, minWidth)
-        
-        // Test above maximum
-        let aboveMax: CGFloat = 25.0
-        let clampedMax = max(minWidth, min(maxWidth, aboveMax))
-        XCTAssertEqual(clampedMax, maxWidth)
-        
-        // Test within range
-        let withinRange: CGFloat = 5.0
-        let clampedRange = max(minWidth, min(maxWidth, withinRange))
-        XCTAssertEqual(clampedRange, withinRange)
+        XCTAssertEqual(LineWidth.normalized(0.2), LineWidth.minimum)
+        XCTAssertEqual(LineWidth.normalized(125), LineWidth.maximum)
+        XCTAssertEqual(LineWidth.normalized(5.1), 5)
     }
 }

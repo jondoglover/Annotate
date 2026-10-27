@@ -24,6 +24,17 @@ extension UserDefaults {
     static let activeCursorSizeKey = "ActiveCursorSize"
 }
 
+enum LineWidth {
+    static let minimum: CGFloat = 0.5
+    static let maximum: CGFloat = 100
+    static let increment: CGFloat = 0.25
+
+    static func normalized(_ value: CGFloat) -> CGFloat {
+        let snapped = round(value / increment) * increment
+        return min(maximum, max(minimum, snapped))
+    }
+}
+
 let colorPalette: [NSColor] = [
     .systemRed, .systemOrange, .systemYellow,
     .systemGreen, .cyan, .systemIndigo,
